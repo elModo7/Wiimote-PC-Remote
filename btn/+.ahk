@@ -1,3 +1,3 @@
-Add:
+Plus:
 Send, {Volume_Up}
 return

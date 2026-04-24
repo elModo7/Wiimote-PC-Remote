@@ -1,0 +1,807 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta charset="utf-8">
+  <title>Wiimote-PC-Remote - elModo7</title>
+  <style>
+    html, body {
+      width: 100%;
+      height: 100%;
+      margin: 0;
+      padding: 0;
+      font-family: "Segoe UI", Arial, sans-serif;
+      background: #f5f1ea;
+      color: #19202a;
+      overflow: hidden;
+    }
+
+    body {
+      display: flex;
+      flex-direction: column;
+    }
+
+    header {
+      height: 38px;
+      display: flex;
+      align-items: center;
+      background: #101820;
+      color: #f7fafc;
+      user-select: none;
+    }
+
+    .title-bar {
+      flex: 1;
+      padding: 10px 14px;
+      font-size: 12px;
+      letter-spacing: 0;
+      text-transform: uppercase;
+      font-weight: 700;
+    }
+
+    .title-btn {
+      width: 44px;
+      height: 38px;
+      line-height: 38px;
+      text-align: center;
+      cursor: pointer;
+      font-family: Webdings;
+      font-size: 12px;
+    }
+
+    .title-btn:hover {
+      background: rgba(255, 255, 255, .13);
+    }
+
+    .title-btn-close:hover {
+      background: #d94f45;
+    }
+
+    body .title-btn-restore {
+      display: none;
+    }
+
+    body.neutron-maximized .title-btn-restore {
+      display: block;
+    }
+
+    body.neutron-maximized .title-btn-maximize {
+      display: none;
+    }
+
+    .app {
+      flex: 1;
+      min-height: 0;
+      display: flex;
+      background: #f5f1ea;
+    }
+
+    .sidebar {
+      width: 360px;
+      min-width: 320px;
+      display: flex;
+      flex-direction: column;
+      border-right: 1px solid #d8d0c3;
+      background: #fffaf2;
+    }
+
+    .side-head {
+      padding: 20px 22px 14px;
+      border-bottom: 1px solid #e0d8cc;
+    }
+
+    h1 {
+      margin: 0;
+      font-size: 26px;
+      line-height: 1.08;
+      letter-spacing: 0;
+      color: #11171f;
+    }
+
+    .subtle {
+      margin-top: 8px;
+      color: #66717f;
+      font-size: 13px;
+      line-height: 1.35;
+    }
+
+    .wiimote-area {
+      position: relative;
+      flex: 1;
+      min-height: 390px;
+      padding: 20px 22px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .remote {
+      position: relative;
+      width: 168px;
+      height: 472px;
+      background: linear-gradient(#fdfdfd, #eceff2);
+      border: 1px solid #c9cdd2;
+      border-radius: 54px 54px 42px 42px;
+      box-shadow: 0 18px 44px rgba(32, 39, 47, .18), inset 0 0 0 7px #f7f9fb;
+    }
+
+    .speaker {
+      position: absolute;
+      left: 62px;
+      top: 178px;
+      width: 44px;
+      height: 32px;
+      background-image: radial-gradient(#a8b0ba 1px, transparent 1px);
+      background-size: 7px 7px;
+      opacity: .9;
+    }
+
+    .btn {
+      position: absolute;
+      border: 1px solid #b7bdc5;
+      background: #ffffff;
+      color: #17202b;
+      box-shadow: 0 4px 12px rgba(18, 24, 31, .12), inset 0 -2px 0 rgba(0,0,0,.06);
+      cursor: pointer;
+      text-align: center;
+      font-weight: 700;
+      font-size: 14px;
+      padding: 0;
+      outline: none;
+    }
+
+    .btn:hover,
+    .btn.active {
+      border-color: #2f8f83;
+      background: #dff4ef;
+      color: #0d5b50;
+    }
+
+    .btn.pressed {
+      background: #f0bc4a;
+      color: #241a06;
+      border-color: #d59a29;
+    }
+
+    .round {
+      width: 46px;
+      height: 46px;
+      line-height: 46px;
+      border-radius: 50%;
+    }
+
+    .small-round {
+      width: 30px;
+      height: 30px;
+      line-height: 30px;
+      border-radius: 50%;
+      font-size: 13px;
+    }
+
+    .pill {
+      width: 36px;
+      height: 22px;
+      line-height: 18px;
+      border-radius: 14px;
+      font-size: 15px;
+    }
+
+    .dpad {
+      position: absolute;
+      left: 48px;
+      top: 62px;
+      width: 72px;
+      height: 72px;
+    }
+
+    .dpad .btn {
+      width: 28px;
+      height: 28px;
+      line-height: 24px;
+      border-radius: 8px;
+    }
+
+    .b-up { left: 22px; top: 0; }
+    .b-down { left: 22px; top: 44px; }
+    .b-left { left: 0; top: 22px; }
+    .b-right { left: 44px; top: 22px; }
+    .b-a { left: 61px; top: 20px; }
+    .b-home { left: 69px; top: 228px; }
+    .b-minus { left: 37px; top: 225px; }
+    .b-plus { left: 99px; top: 225px; }
+    .b-one { left: 61px; top: 338px; }
+    .b-two { left: 61px; top: 393px; }
+    .b-b {
+      left: 63px;
+      top: -18px;
+      width: 42px;
+      height: 24px;
+      line-height: 20px;
+      border-radius: 14px;
+      background: #dce4ec;
+    }
+
+    .button-list {
+      border-top: 1px solid #e0d8cc;
+      padding: 14px;
+      height: 210px;
+      overflow: auto;
+      background: #faf4ea;
+    }
+
+    .map-row {
+      display: flex;
+      align-items: center;
+      width: 100%;
+      border: 1px solid transparent;
+      background: transparent;
+      border-radius: 8px;
+      padding: 8px;
+      margin: 0 0 5px;
+      text-align: left;
+      color: #18212c;
+      cursor: pointer;
+    }
+
+    .map-row:hover,
+    .map-row.active {
+      border-color: #d4a23e;
+      background: #fff7e5;
+    }
+
+    .map-key {
+      width: 38px;
+      height: 30px;
+      line-height: 30px;
+      border-radius: 7px;
+      background: #17202b;
+      color: #fff;
+      text-align: center;
+      font-weight: 700;
+      margin-right: 10px;
+      flex: none;
+    }
+
+    .map-main {
+      min-width: 0;
+      flex: 1;
+    }
+
+    .map-title {
+      font-size: 13px;
+      font-weight: 700;
+      line-height: 1.2;
+    }
+
+    .map-summary {
+      font-size: 12px;
+      color: #6a7380;
+      line-height: 1.25;
+      white-space: nowrap;
+      overflow: hidden;
+      text-overflow: ellipsis;
+    }
+
+    .workspace {
+      flex: 1;
+      min-width: 0;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .toolbar {
+      min-height: 70px;
+      padding: 14px 18px;
+      border-bottom: 1px solid #d8d0c3;
+      background: #f8f6f1;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .selected-title {
+      font-size: 20px;
+      font-weight: 800;
+      color: #101820;
+    }
+
+    .selected-summary {
+      margin-top: 4px;
+      color: #697481;
+      font-size: 13px;
+    }
+
+    .toolbar-actions {
+      display: flex;
+      gap: 8px;
+    }
+
+    .content {
+      flex: 1;
+      min-height: 0;
+      padding: 18px;
+      overflow: auto;
+    }
+
+    .panel {
+      border: 1px solid #d9d2c7;
+      background: #fffdf9;
+      border-radius: 8px;
+      margin-bottom: 16px;
+    }
+
+    .panel-head {
+      padding: 14px 16px;
+      border-bottom: 1px solid #ebe4da;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    h2 {
+      margin: 0;
+      font-size: 15px;
+      line-height: 1.2;
+      color: #17202b;
+    }
+
+    .panel-body {
+      padding: 16px;
+    }
+
+    .grid-2 {
+      display: flex;
+      gap: 14px;
+      flex-wrap: wrap;
+    }
+
+    .field {
+      flex: 1 1 230px;
+      min-width: 220px;
+      margin-bottom: 12px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 6px;
+      color: #4e5a67;
+      font-size: 12px;
+      font-weight: 700;
+      text-transform: uppercase;
+    }
+
+    select,
+    input[type=text],
+    textarea {
+      width: 100%;
+      box-sizing: border-box;
+      border: 1px solid #cfd5dc;
+      border-radius: 7px;
+      background: #ffffff;
+      color: #17202b;
+      font-family: "Segoe UI", Arial, sans-serif;
+      font-size: 14px;
+      padding: 10px 11px;
+      outline: none;
+    }
+
+    textarea {
+      height: 250px;
+      resize: vertical;
+      font-family: Consolas, "Courier New", monospace;
+      line-height: 1.38;
+      white-space: pre;
+    }
+
+    select:focus,
+    input[type=text]:focus,
+    textarea:focus {
+      border-color: #2f8f83;
+      box-shadow: 0 0 0 3px rgba(47,143,131,.16);
+    }
+
+    .hint {
+      margin-top: 6px;
+      color: #747f8d;
+      font-size: 12px;
+      line-height: 1.35;
+    }
+
+    .mode-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 14px;
+    }
+
+    .mode-row label {
+      text-transform: none;
+      color: #24303d;
+      font-size: 13px;
+      font-weight: 700;
+      margin: 0;
+      border: 1px solid #d0d7dd;
+      border-radius: 8px;
+      background: #f8fafb;
+      padding: 9px 12px;
+      cursor: pointer;
+    }
+
+    .mode-row input {
+      vertical-align: -2px;
+      margin-right: 5px;
+    }
+
+    .mode-panel {
+      display: none;
+    }
+
+    .mode-panel.active {
+      display: block;
+    }
+
+    .quick-actions {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+    }
+
+    .mini {
+      border: 1px solid #cfd5dc;
+      border-radius: 7px;
+      background: #ffffff;
+      color: #22303d;
+      padding: 8px 10px;
+      cursor: pointer;
+      font-weight: 700;
+      font-size: 12px;
+    }
+
+    .mini:hover {
+      border-color: #d6a33d;
+      background: #fff6e0;
+    }
+
+    .primary,
+    .secondary,
+    .danger {
+      border: 1px solid transparent;
+      border-radius: 7px;
+      padding: 10px 13px;
+      font-weight: 800;
+      cursor: pointer;
+      min-width: 92px;
+    }
+
+    .primary {
+      background: #2f8f83;
+      color: #ffffff;
+    }
+
+    .secondary {
+      background: #101820;
+      color: #ffffff;
+    }
+
+    .danger {
+      background: #fff0eb;
+      border-color: #e2b8ac;
+      color: #9b3523;
+    }
+
+    .profile-form {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      align-items: flex-end;
+    }
+
+    .profile-form .field {
+      margin-bottom: 0;
+    }
+
+    .status {
+      padding: 10px 16px;
+      border-top: 1px solid #d8d0c3;
+      background: #101820;
+      color: #e9f1f0;
+      font-size: 12px;
+      min-height: 16px;
+    }
+
+    @media screen and (max-width: 900px) {
+      .app {
+        flex-direction: column;
+      }
+
+      .sidebar {
+        width: auto;
+        min-height: 300px;
+        flex: none;
+      }
+
+      .wiimote-area {
+        min-height: 260px;
+      }
+
+      .remote {
+        transform: scale(.62);
+      }
+
+      .button-list {
+        height: 140px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <span class="title-bar" onmousedown="neutron.DragTitleBar()">Wiimote-PC-Remote - elModo7</span>
+    <span class="title-btn" onclick="neutron.Minimize()">0</span>
+    <span class="title-btn title-btn-maximize" onclick="neutron.Maximize()">1</span>
+    <span class="title-btn title-btn-restore" onclick="neutron.Maximize()">2</span>
+    <span class="title-btn title-btn-close" onclick="neutron.Close()">r</span>
+  </header>
+
+  <div class="app">
+    <aside class="sidebar">
+      <div class="side-head">
+        <h1>Quick remap</h1>
+        <div class="subtle">Choose a Wiimote button and assign a key, button, macro, or AHK script.</div>
+      </div>
+
+      <div class="wiimote-area">
+        <div class="remote">
+          <button type="button" class="btn b-b" data-button="B" onclick="selectButton('B')">B</button>
+          <button type="button" class="btn round b-a" data-button="A" onclick="selectButton('A')">A</button>
+          <div class="dpad">
+            <button type="button" class="btn b-up" data-button="Up" onclick="selectButton('Up')">▲</button>
+            <button type="button" class="btn b-left" data-button="Left" onclick="selectButton('Left')">◀</button>
+            <button type="button" class="btn b-right" data-button="Right" onclick="selectButton('Right')">▶</button>
+            <button type="button" class="btn b-down" data-button="Down" onclick="selectButton('Down')">▼</button>
+          </div>
+          <button type="button" class="btn pill b-minus" data-button="Minus" onclick="selectButton('Minus')">-</button>
+          <button type="button" class="btn small-round b-home" data-button="Home" onclick="selectButton('Home')">⌂</button>
+          <button type="button" class="btn pill b-plus" data-button="Plus" onclick="selectButton('Plus')">+</button>
+          <div class="speaker"></div>
+          <button type="button" class="btn round b-one" data-button="1" onclick="selectButton('1')">1</button>
+          <button type="button" class="btn round b-two" data-button="2" onclick="selectButton('2')">2</button>
+        </div>
+      </div>
+
+      <div class="button-list" id="buttonList">
+        <button type="button" class="map-row" data-button="A" onclick="selectButton('A')"><span class="map-key">A</span><span class="map-main"><span class="map-title">Button A</span><span class="map-summary" id="summary-A">-</span></span></button>
+        <button type="button" class="map-row" data-button="B" onclick="selectButton('B')"><span class="map-key">B</span><span class="map-main"><span class="map-title">Button B</span><span class="map-summary" id="summary-B">-</span></span></button>
+        <button type="button" class="map-row" data-button="Up" onclick="selectButton('Up')"><span class="map-key">▲</span><span class="map-main"><span class="map-title">Up</span><span class="map-summary" id="summary-Up">-</span></span></button>
+        <button type="button" class="map-row" data-button="Down" onclick="selectButton('Down')"><span class="map-key">▼</span><span class="map-main"><span class="map-title">Down</span><span class="map-summary" id="summary-Down">-</span></span></button>
+        <button type="button" class="map-row" data-button="Left" onclick="selectButton('Left')"><span class="map-key">◀</span><span class="map-main"><span class="map-title">Left</span><span class="map-summary" id="summary-Left">-</span></span></button>
+        <button type="button" class="map-row" data-button="Right" onclick="selectButton('Right')"><span class="map-key">▶</span><span class="map-main"><span class="map-title">Right</span><span class="map-summary" id="summary-Right">-</span></span></button>
+        <button type="button" class="map-row" data-button="1" onclick="selectButton('1')"><span class="map-key">1</span><span class="map-main"><span class="map-title">Button 1</span><span class="map-summary" id="summary-1">-</span></span></button>
+        <button type="button" class="map-row" data-button="2" onclick="selectButton('2')"><span class="map-key">2</span><span class="map-main"><span class="map-title">Button 2</span><span class="map-summary" id="summary-2">-</span></span></button>
+        <button type="button" class="map-row" data-button="Plus" onclick="selectButton('Plus')"><span class="map-key">+</span><span class="map-main"><span class="map-title">Plus</span><span class="map-summary" id="summary-Plus">-</span></span></button>
+        <button type="button" class="map-row" data-button="Minus" onclick="selectButton('Minus')"><span class="map-key">-</span><span class="map-main"><span class="map-title">Minus</span><span class="map-summary" id="summary-Minus">-</span></span></button>
+        <button type="button" class="map-row" data-button="Home" onclick="selectButton('Home')"><span class="map-key">⌂</span><span class="map-main"><span class="map-title">Home</span><span class="map-summary" id="summary-Home">-</span></span></button>
+      </div>
+    </aside>
+
+    <main class="workspace">
+      <div class="toolbar">
+        <div>
+          <div class="selected-title">Configuring <span id="selectedLabel">A</span></div>
+          <div class="selected-summary" id="editorSummary">-</div>
+        </div>
+        <div class="toolbar-actions">
+          <button type="button" class="danger" onclick="ahk.ClearCurrent(event)">Clear</button>
+          <button type="button" class="secondary" onclick="ahk.ReloadMappings(event)">Apply</button>
+        </div>
+      </div>
+
+      <div class="content">
+        <form id="mappingForm" onsubmit="ahk.SaveCurrent(event)">
+          <input type="hidden" id="selectedButton" name="selectedButton" value="A">
+
+          <div class="panel">
+            <div class="panel-head">
+              <h2>Constructor</h2>
+              <button type="button" class="primary" onclick="submitGenerate()">Generate</button>
+            </div>
+            <div class="panel-body">
+              <div class="mode-row" onchange="updateMode()">
+                <label><input type="radio" name="mode" value="key" checked>Key</label>
+                <label><input type="radio" name="mode" value="button">Button</label>
+                <label><input type="radio" name="mode" value="macro">Macro</label>
+                <label><input type="radio" name="mode" value="run">Open</label>
+                <label><input type="radio" name="mode" value="custom">Script</label>
+              </div>
+
+              <div id="mode-key" class="mode-panel active">
+                <div class="field">
+                  <label for="keySequence">Send sequence</label>
+                  <input type="text" id="keySequence" name="keySequence" value="{Enter}">
+                  <div class="quick-actions">
+                    <button type="button" class="mini" onclick="setKey('{Up}')">Up</button>
+                    <button type="button" class="mini" onclick="setKey('{Down}')">Down</button>
+                    <button type="button" class="mini" onclick="setKey('{Left}')">Left</button>
+                    <button type="button" class="mini" onclick="setKey('{Right}')">Right</button>
+                    <button type="button" class="mini" onclick="setKey('{Space}')">Space</button>
+                    <button type="button" class="mini" onclick="setKey('^c')">Ctrl+C</button>
+                    <button type="button" class="mini" onclick="setKey('^v')">Ctrl+V</button>
+                    <button type="button" class="mini" onclick="setKey('#d')">Win+D</button>
+                    <button type="button" class="mini" onclick="setKey('{Volume_Up}')">Vol+</button>
+                    <button type="button" class="mini" onclick="setKey('{Volume_Down}')">Vol-</button>
+                  </div>
+                </div>
+              </div>
+
+              <div id="mode-button" class="mode-panel">
+                <div class="field">
+                  <label for="targetButton">Send to another button</label>
+                  <select id="targetButton" name="targetButton">
+                    <option value="A">A</option>
+                    <option value="B">B</option>
+                    <option value="Up">Up</option>
+                    <option value="Down">Down</option>
+                    <option value="Left">Left</option>
+                    <option value="Right">Right</option>
+                    <option value="1">1</option>
+                    <option value="2">2</option>
+                    <option value="Plus">+</option>
+                    <option value="Minus">-</option>
+                    <option value="Home">Home</option>
+                  </select>
+                </div>
+              </div>
+
+              <div id="mode-macro" class="mode-panel">
+                <div class="field">
+                  <label for="macroLines">AHK macro lines</label>
+                  <textarea id="macroLines" name="macroLines">Send, ^c
+Sleep, 120
+Run, notepad.exe</textarea>
+                </div>
+              </div>
+
+              <div id="mode-run" class="mode-panel">
+                <div class="field">
+                  <label for="runTarget">Program, file, or URL</label>
+                  <input type="text" id="runTarget" name="runTarget" value="https://www.youtube.com/">
+                </div>
+              </div>
+
+              <div id="mode-custom" class="mode-panel">
+                <div class="hint">The editor below accepts a full subroutine or just the body; saving normalizes it for the selected button.</div>
+              </div>
+            </div>
+          </div>
+
+          <div class="panel">
+            <div class="panel-head">
+              <h2>Button script</h2>
+              <button type="submit" class="primary">Save</button>
+            </div>
+            <div class="panel-body">
+              <textarea id="script" name="script"></textarea>
+            </div>
+          </div>
+        </form>
+
+        <div class="panel">
+          <div class="panel-head">
+            <h2>Profiles</h2>
+          </div>
+          <div class="panel-body">
+            <form id="profileForm" class="profile-form" onsubmit="ahk.SaveProfile(event)">
+              <div class="field">
+                <label for="profileName">Name</label>
+                <input type="text" id="profileName" name="profileName" list="profileList" placeholder="default">
+                <datalist id="profileList"></datalist>
+              </div>
+              <button type="submit" class="primary">Save profile</button>
+              <button type="button" class="secondary" onclick="ahk.LoadProfile(event)">Load</button>
+              <button type="button" class="danger" onclick="ahk.DeleteProfile(event)">Delete</button>
+            </form>
+          </div>
+        </div>
+      </div>
+
+      <div class="status" id="status">Ready.</div>
+    </main>
+  </div>
+
+  <script>
+    var labels = {
+      Up: 'Up',
+      Down: 'Down',
+      Left: 'Left',
+      Right: 'Right',
+      A: 'A',
+      B: 'B',
+      '1': '1',
+      '2': '2',
+      Plus: '+',
+      Minus: '-',
+      Home: 'Home'
+    };
+
+    function queryAll(selector) {
+      return document.querySelectorAll(selector);
+    }
+
+    function selectButton(button) {
+      ahk.SelectButton(button);
+    }
+
+    function selectButtonFromAhk(button, script, summary) {
+      document.getElementById('selectedButton').value = button;
+      document.getElementById('selectedLabel').innerText = labels[button] || button;
+      document.getElementById('script').value = script;
+      document.getElementById('editorSummary').innerText = summary;
+      setActiveButton(button);
+    }
+
+    function setButtonSummary(button, summary) {
+      var el = document.getElementById('summary-' + button);
+      if (el) el.innerText = summary;
+    }
+
+    function setActiveButton(button) {
+      var nodes = queryAll('[data-button]');
+      for (var i = 0; i < nodes.length; i++) {
+        if (nodes[i].getAttribute('data-button') == button) {
+          addClass(nodes[i], 'active');
+        } else {
+          removeClass(nodes[i], 'active');
+        }
+      }
+    }
+
+    function flashPressed(button) {
+      var nodes = queryAll('[data-button="' + button + '"]');
+      for (var i = 0; i < nodes.length; i++) addClass(nodes[i], 'pressed');
+      window.setTimeout(function () {
+        for (var j = 0; j < nodes.length; j++) removeClass(nodes[j], 'pressed');
+      }, 180);
+    }
+
+    function addClass(el, name) {
+      if (el.classList) {
+        el.classList.add(name);
+      } else if ((' ' + el.className + ' ').indexOf(' ' + name + ' ') < 0) {
+        el.className += ' ' + name;
+      }
+    }
+
+    function removeClass(el, name) {
+      if (el.classList) {
+        el.classList.remove(name);
+      } else {
+        el.className = (' ' + el.className + ' ').replace(' ' + name + ' ', ' ');
+      }
+    }
+
+    function selectedMode() {
+      var radios = document.getElementsByName('mode');
+      for (var i = 0; i < radios.length; i++) {
+        if (radios[i].checked) return radios[i].value;
+      }
+      return 'key';
+    }
+
+    function updateMode() {
+      var mode = selectedMode();
+      var panels = queryAll('.mode-panel');
+      for (var i = 0; i < panels.length; i++) removeClass(panels[i], 'active');
+      addClass(document.getElementById('mode-' + mode), 'active');
+    }
+
+    function setKey(value) {
+      document.getElementById('keySequence').value = value;
+    }
+
+    function submitGenerate() {
+      ahk.GenerateMapping();
+    }
+  </script>
+</body>
+</html>
