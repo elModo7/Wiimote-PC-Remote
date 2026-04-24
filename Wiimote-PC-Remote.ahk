@@ -1,4 +1,7 @@
 ; Wiimote-PC-Remote https://github.com/elModo7/Wiimote-PC-Remote
+; Credits:
+; - TheGood for AHKHID: https://github.com/jleb/AHKHID/blob/master/AHKHID.ahk
+; - GeekDude / G33kDude for Neutron: https://github.com/G33kDude/Neutron.ahk
 #NoEnv
 #SingleInstance, Force
 #Include lib\AHKHID.ahk
